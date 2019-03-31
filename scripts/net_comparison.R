@@ -1,0 +1,52 @@
+setwd("../datasets/")
+library(farff)
+library(neuralnet)
+
+abalone = readARFF("b1.arff")
+arrythmia = readARFF("b2.arff")
+audiology = readARFF("b3.arff")
+balance = readARFF("b4.arff")
+breast_cancer = readARFF("b5.arff")
+car_eval = readARFF("b6.arff")
+CM1 = readARFF("b7.arff")
+datatrieve = readARFF("b8.arff")
+desharnais = readARFF("b9.arff")
+ecoli = readARFF("b10.arff") #Error, "names" of wrong size maybe
+echo_cardiogram = readARFF("b11.arff")
+glass = readARFF("b12.arff")
+heart_cleveland = readARFF("b13.arff")
+heart_statlog = readARFF("b14.arff")
+hepatitis = readARFF("b15.arff")
+JM1 = readARFF("b16.arff")
+kr_vs_kp = readARFF("b17.arff")
+MW1 = readARFF("b18.arff")
+pima_diabetes = readARFF("b19.arff")
+post_operative = readARFF("b20.arff")
+primary_tumor = readARFF("b21.arff")
+reuse = readARFF("b22.arff")
+solar_flare = readARFF("b23.arff")
+tic_tac_toe = readARFF("b24.arff")
+thyroid_allhyper = readARFF("b25.arff")
+thyroid_hypothyroid = readARFF("b26.arff")
+thyroid_sick_euthyroid = readARFF("b27.arff")
+wbdc = readARFF("b28.arff")
+wisconsin = readARFF("b29.arff")
+wine = readARFF("b30.arff")
+yeast = readARFF("b31.arff")
+zoo = readARFF("b32.arff")
+
+
+calculate = function(data, n_hidden){
+  amostra = 0.7 * nrow(data)
+  set.seed(23)
+  indice = sample(seq_len(nrow(data), size=amostra))
+  data = normalize(data)
+  vars = names(data)
+  goal_class = tail(vars, n=1)
+  formula = as.formula(paste(paste(goal_class, " ~ ", collapse = ""), paste(vars[vars!=goal_class], collapse = " + ")))
+  ll = ncol(data) - 3
+  lh = ncol(data) + 3
+  tamanho_base = (lh-ll+1)*(lh-ll+1)
+  base = matrix(nrow = tamanho_base, ncol=n_hidden)
+}
+
