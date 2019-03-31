@@ -1,39 +1,38 @@
 setwd("../datasets/")
-library(farff)
 library(neuralnet)
 
-abalone = readARFF("b1.arff")
-arrythmia = readARFF("b2.arff")
-audiology = readARFF("b3.arff")
-balance = readARFF("b4.arff")
-breast_cancer = readARFF("b5.arff")
-car_eval = readARFF("b6.arff")
-CM1 = readARFF("b7.arff")
-datatrieve = readARFF("b8.arff")
-desharnais = readARFF("b9.arff")
-ecoli = readARFF("b10.arff") #Error, "names" of wrong size maybe
-echo_cardiogram = readARFF("b11.arff")
-glass = readARFF("b12.arff")
-heart_cleveland = readARFF("b13.arff")
-heart_statlog = readARFF("b14.arff")
-hepatitis = readARFF("b15.arff")
-JM1 = readARFF("b16.arff")
-kr_vs_kp = readARFF("b17.arff")
-MW1 = readARFF("b18.arff")
-pima_diabetes = readARFF("b19.arff")
-post_operative = readARFF("b20.arff")
-primary_tumor = readARFF("b21.arff")
-reuse = readARFF("b22.arff")
-solar_flare = readARFF("b23.arff")
-tic_tac_toe = readARFF("b24.arff")
-thyroid_allhyper = readARFF("b25.arff")
-thyroid_hypothyroid = readARFF("b26.arff")
-thyroid_sick_euthyroid = readARFF("b27.arff")
-wbdc = readARFF("b28.arff")
-wisconsin = readARFF("b29.arff")
-wine = readARFF("b30.arff")
-yeast = readARFF("b31.arff")
-zoo = readARFF("b32.arff")
+abalone = read.csv("b1.csv")
+arrythmia = read.csv("b2.csv")
+audiology = read.csv("b3.csv")
+balance = read.csv("b4.csv")
+breast_cancer = read.csv("b5.csv")
+car_eval = read.csv("b6.csv")
+CM1 = read.csv("b7.csv")
+datatrieve = read.csv("b8.csv")
+desharnais = read.csv("b9.csv")
+ecoli = read.csv("b10.csv") #Error, "names" of wrong size maybe
+echo_cardiogram = read.csv("b11.csv")
+glass = read.csv("b12.csv")
+heart_cleveland = read.csv("b13.csv")
+heart_statlog = read.csv("b14.csv")
+hepatitis = read.csv("b15.csv")
+JM1 = read.csv("b16.csv")
+kr_vs_kp = read.csv("b17.csv")
+MW1 = read.csv("b18.csv")
+pima_diabetes = read.csv("b19.csv")
+post_operative = read.csv("b20.csv")
+primary_tumor = read.csv("b21.csv")
+reuse = read.csv("b22.csv")
+solar_flare = read.csv("b23.csv")
+tic_tac_toe = read.csv("b24.csv") #Also error
+thyroid_allhyper = read.csv("b25.csv")
+thyroid_hypothyroid = read.csv("b26.csv") #and here
+thyroid_sick_euthyroid = read.csv("b27.csv")
+wbdc = read.csv("b28.csv")
+wisconsin = read.csv("b29.csv")
+wine = read.csv("b30.csv")
+yeast = read.csv("b31.csv") #and i guess here
+zoo = read.csv("b32.csv")
 
 
 calculate = function(data, n_hidden){
@@ -48,5 +47,7 @@ calculate = function(data, n_hidden){
   lh = ncol(data) + 3
   tamanho_base = (lh-ll+1)*(lh-ll+1)
   base = matrix(nrow = tamanho_base, ncol=n_hidden)
+
 }
+
 
