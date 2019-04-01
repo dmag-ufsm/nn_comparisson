@@ -52,20 +52,24 @@ hidden_layers = 4
 no_cores = max(1, detectCores()-1)
 
 
-work <<- function(l1, l2, l3, l4){
+work <<- function(l1, l2, l3, l4, formula, data.train, data.test){
   set.seed(42)
   NN = neuralnet(formula, data.train, hidden = c(l1, l2, l3, l4), stepmax = 1e+07, linear.output=T)
-  previsao <- compute(NN, data.test[,-tail(data.test)])
-  
-  mse <- sum((data.test[,tail(data.test)] - previsao$net.result)^2 / nrow(data.test))
+  previsao <- compute(NN, data.test[,-ncol(data.test)])
+
+  mse <- sum((data.test[,ncol(data.test)] - previsao$net.result)^2 / nrow(data.test))
   return (c(l1,l2,l3,l4,mse))
 }
+
+data <- desharnais
+data_name <- "desharnais"
+f_work <- work
 
 calculate = function(data, data_name, f_work){
   amostra = 0.7 * ncol(data)
   set.seed(23)
   indice = sample(seq_len(ncol(data)), size=amostra)
-
+  
   vars = names(data)  
   #This was found on stackoverflow!
   must_convert <- sapply(data, is.factor)
@@ -75,13 +79,11 @@ calculate = function(data, data_name, f_work){
   #end of sof
   
   data.norm = as.data.frame(lapply(data.norm, normalize))
-
+  
   goal_class = tail(vars, n=1)
   formula = as.formula(paste(paste(goal_class, " ~ ", collapse = ""), paste(vars[vars!=goal_class], collapse = " + ")))
   ll = max(ncol(data.norm) - layer_range, -1)
-  print(ncol(data.norm))
   lh = ncol(data.norm) + layer_range
-  print(lh)
   tamanho_base = (lh-ll+1)**hidden_layers
   base = matrix(nrow = tamanho_base, ncol=hidden_layers)
   a <- 1
@@ -104,15 +106,16 @@ calculate = function(data, data_name, f_work){
   
   cluster <- makeCluster(no_cores)
   registerDoParallel(cluster)
+  
   result <- foreach(index = 1:tamanho_base,
-          .combine = rbind,
-          .export = c("base", "formula", "data.train", "data.test"),
-          .packages = c("neuralnet")
-          ) %dopar% f_work(base[index,1],base[index,2],base[index,3],base[index,4])
-
+                    .combine = rbind,
+                    # .export = c("formula", "data.train", "data.test"),
+                    .packages = c("neuralnet")
+  ) %dopar% f_work(base[index,1],base[index,2],base[index,3],base[index,4], formula, data.train, data.test)
+  
   stopCluster(cluster)
   colnames(result) = c("1st layer", "2nd layer", "3rd layer", "4th layer", "MSE")
-  write.csv(result, file=paste(data, ".csv", collapse = ""), row.names=F)
+  write.csv(result, file=paste(data_name, ".csv", collapse = ""), row.names=F)
   
 }
 
