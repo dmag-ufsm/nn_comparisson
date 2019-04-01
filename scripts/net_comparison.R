@@ -35,18 +35,55 @@ yeast = read.csv("b31.csv") #and i guess here
 zoo = read.csv("b32.csv")
 
 
-calculate = function(data, n_hidden){
-  amostra = 0.7 * nrow(data)
-  set.seed(23)
-  indice = sample(seq_len(nrow(data), size=amostra))
-  data = normalize(data)
-  vars = names(data)
-  goal_class = tail(vars, n=1)
-  formula = as.formula(paste(paste(goal_class, " ~ ", collapse = ""), paste(vars[vars!=goal_class], collapse = " + ")))
-  ll = ncol(data) - 3
-  lh = ncol(data) + 3
-  tamanho_base = (lh-ll+1)*(lh-ll+1)
-  base = matrix(nrow = tamanho_base, ncol=n_hidden)
+
+normalize = function(x){
+	return (x-min(x))/(max(x) - min(x))
+}
+
+
+#defines the range of hidden layer sizes
+layer_range = 3
+hidden_layers = 4
+
+work = function(l1, l2, l3, l4, formula, data.train, data.test){
+	set.seed(42)
+	NN = neuralnet(formula, data.train, hidden = c(l1, l2, l3, l4), stepmax = 1e+07, linear.output=T)
+	previsao <- compute(NN, data.test[,-tail(data.test)])
+
+	mse <- sum((data.test[,tail(data.test)] - previsao$net.result) **2 / nrow(data.test))
+	return mse
+
+}
+
+calculate = function(data){
+	amostra = 0.7 * ncol(data)
+	set.seed(23)
+	indice = sample(seq_len(ncol(data), size=amostra))
+	data.norm = as.matrix(lapply(data, normalize))
+	vars = names(data.norm)
+	goal_class = tail(vars, n=1)
+	formula = as.formula(paste(paste(goal_class, " ~ ", collapse = ""), paste(vars[vars!=goal_class], collapse = " + ")))
+	ll = max(ncol(data.norm) - layer_range, -1)
+	lh = ncol(data.norm) + layer_range
+	tamanho_base = (lh-ll+1)**hidden_layers
+	base = matrix(nrow = tamanho_base, ncol=hidden_layers)
+	a = 1
+	for(i in ll:lh){
+		for(j in ll:lh){
+			for(k in ll:lh){
+				for(l in ll:lh){
+					base[a, 1] <- i
+					base[a, 2] <- j
+					base[a, 3] <- k
+					base[a, 4] <- l
+					a = a + 1
+				}
+			}
+		}
+	}
+
+	
+
 
 }
 
