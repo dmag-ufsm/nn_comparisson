@@ -52,7 +52,7 @@ hidden_layers = 4
 no_cores = max(1, detectCores()-1)
 
 
-work = function(l1, l2, l3, l4, formula, data.train, data.test){
+work <<- function(l1, l2, l3, l4){
   set.seed(42)
   NN = neuralnet(formula, data.train, hidden = c(l1, l2, l3, l4), stepmax = 1e+07, linear.output=T)
   previsao <- compute(NN, data.test[,-tail(data.test)])
@@ -61,7 +61,7 @@ work = function(l1, l2, l3, l4, formula, data.train, data.test){
   return (c(l1,l2,l3,l4,mse))
 }
 
-calculate = function(data, data_name){
+calculate = function(data, data_name, f_work){
   amostra = 0.7 * ncol(data)
   set.seed(23)
   indice = sample(seq_len(ncol(data)), size=amostra)
@@ -108,7 +108,7 @@ calculate = function(data, data_name){
           .combine = rbind,
           .export = c("base", "formula", "data.train", "data.test"),
           .packages = c("neuralnet")
-          ) %dopar% work(base[index,1],base[index,2],base[index,3],base[index,4])
+          ) %dopar% f_work(base[index,1],base[index,2],base[index,3],base[index,4])
 
   stopCluster(cluster)
   colnames(result) = c("1st layer", "2nd layer", "3rd layer", "4th layer", "MSE")
@@ -116,4 +116,4 @@ calculate = function(data, data_name){
   
 }
 
-a = calculate(desharnais, "desharnais")
+a = calculate(desharnais, "desharnais", work)
