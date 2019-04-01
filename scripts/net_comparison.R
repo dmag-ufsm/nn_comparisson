@@ -71,13 +71,17 @@ calculate = function(data, data_name, f_work){
   
   must_convert <- sapply(data, is.factor)
   temp <- sapply(data[,must_convert], unclass)
-  data.norm <- cbind(data[,!must_convert], temp)
-  if (class(temp) == "integer") { 
-    x <- names(data.norm)
-    x[length(x)] <- vars[must_convert]
-    names(data.norm) <- x 
+  if (class(temp) != "list") {
+    data.norm <- cbind(data[,!must_convert], temp)
+    if (class(temp) == "integer") { 
+      x <- names(data.norm)
+      x[length(x)] <- vars[must_convert]
+      names(data.norm) <- x 
+    }
+    data.norm = data.norm[,vars]
+  } else {
+    data.norm = data
   }
-  data.norm = data.norm[,vars]
   
   
   data.norm = as.data.frame(lapply(data.norm, normalize))
