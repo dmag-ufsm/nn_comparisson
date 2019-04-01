@@ -61,10 +61,6 @@ work <<- function(l1, l2, l3, l4, formula, data.train, data.test){
   return (c(l1,l2,l3,l4,mse))
 }
 
-data <- desharnais
-data_name <- "desharnais"
-f_work <- work
-
 calculate = function(data, data_name, f_work){
   amostra = 0.7 * ncol(data)
   set.seed(23)
