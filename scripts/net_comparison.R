@@ -59,7 +59,10 @@ calculate = function(data){
 	amostra = 0.7 * ncol(data)
 	set.seed(23)
 	indice = sample(seq_len(ncol(data), size=amostra))
-	data.norm = as.matrix(lapply(data, normalize))
+	
+	data.norm = data.matrix(data)
+	data.norm = as.data.frame(lapply(data.norm, normalize))
+
 	vars = names(data.norm)
 	goal_class = tail(vars, n=1)
 	formula = as.formula(paste(paste(goal_class, " ~ ", collapse = ""), paste(vars[vars!=goal_class], collapse = " + ")))
