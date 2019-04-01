@@ -1,4 +1,5 @@
 getwd()
+setwd("DMAG/nn_comparisson/datasets/")
 
 library(neuralnet)
 library(parallel)
@@ -71,12 +72,17 @@ calculate = function(data, data_name, f_work){
   indice = sample(seq_len(ncol(data)), size=amostra)
   
   vars = names(data)  
-  #This was found on stackoverflow!
+  
   must_convert <- sapply(data, is.factor)
   temp <- sapply(data[,must_convert], unclass)
   data.norm <- cbind(data[,!must_convert], temp)
+  if (class(temp) == "integer") { 
+    x <- names(data.norm)
+    x[length(x)] <- vars[must_convert]
+    names(data.norm) <- x 
+  }
   data.norm = data.norm[,vars]
-  #end of sof
+  
   
   data.norm = as.data.frame(lapply(data.norm, normalize))
   
@@ -115,8 +121,39 @@ calculate = function(data, data_name, f_work){
   
   stopCluster(cluster)
   colnames(result) = c("1st layer", "2nd layer", "3rd layer", "4th layer", "MSE")
-  write.csv(result, file=paste(data_name, ".csv", collapse = ""), row.names=F)
+  write.csv(result, file=paste(data_name, "csv", collapse = "."), row.names=F)
   
 }
 
-a = calculate(desharnais, "desharnais", work)
+calculate(abalone,"abalone", work)
+calculate(arrythmia,"arrythmia", work)
+calculate(audiology,"audiology", work)
+calculate(balance,"balance", work)
+calculate(breast_cancer,"breast_cancer", work)
+calculate(car_eval,"car_eval", work)
+calculate(CM1,"CM1", work)
+calculate(datatrieve,"datatrieve", work)
+calculate(desharnais,"desharnais", work)
+calculate(ecoli,"ecoli", work)
+calculate(echo_cardiogram,"echo_cardiogram", work)
+calculate(glass,"glass", work)
+calculate(heart_cleveland,"heart_cleveland", work)
+calculate(heart_statlog,"heart_statlog", work)
+calculate(hepatitis,"hepatitis", work)
+calculate(JM1,"JM1", work)
+calculate(kr_vs_kp,"kr_vs_kp", work)
+calculate(MW1,"MW1", work)
+calculate(pima_diabetes,"pima_diabetes", work)
+calculate(post_operative,"post_operative", work)
+calculate(primary_tumor,"primary_tumor", work)
+calculate(reuse,"reuse", work)
+calculate(solar_flare,"solar_flare", work)
+calculate(tic_tac_toe,"tic_tac_toe", work)
+calculate(thyroid_allhyper,"thyroid_allhyper", work)
+calculate(thyroid_hypothyroid,"thyroid_hypothyroid", work)
+calculate(thyroid_sick_euthyroid,"thyroid_sick_euthyroid", work)
+calculate(wbdc,"wbdc", work)
+calculate(wisconsin,"wisconsin", work)
+calculate(wine,"wine", work)
+calculate(yeast,"yeast", work)
+calculate(zoo,"zoo", work)
