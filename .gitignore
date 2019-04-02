@@ -1,1 +1,5 @@
 *.swp
+.Rhistory
+abalone csv
+*.RData
+
