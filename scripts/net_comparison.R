@@ -1,12 +1,11 @@
 getwd()
-setwd("DMAG/nn_comparisson/datasets/")
 
 library(neuralnet)
 library(parallel)
 library(doParallel)
 
 abalone = read.csv("b1.csv")
-arrythmia = read.csv("b2.csv")
+# arrythmia = read.csv("b2.csv") # Do not converge
 audiology = read.csv("b3.csv")
 balance = read.csv("b4.csv")
 breast_cancer = read.csv("b5.csv")
@@ -14,7 +13,7 @@ car_eval = read.csv("b6.csv")
 CM1 = read.csv("b7.csv")
 datatrieve = read.csv("b8.csv")
 desharnais = read.csv("b9.csv")
-ecoli = read.csv("b10.csv") #Error, "names" of wrong size maybe
+ecoli = read.csv("b10.csv")
 echo_cardiogram = read.csv("b11.csv")
 glass = read.csv("b12.csv")
 heart_cleveland = read.csv("b13.csv")
@@ -28,14 +27,14 @@ post_operative = read.csv("b20.csv")
 primary_tumor = read.csv("b21.csv")
 reuse = read.csv("b22.csv")
 solar_flare = read.csv("b23.csv")
-tic_tac_toe = read.csv("b24.csv") #Also error
+tic_tac_toe = read.csv("b24.csv")
 thyroid_allhyper = read.csv("b25.csv")
-thyroid_hypothyroid = read.csv("b26.csv") #and here
+thyroid_hypothyroid = read.csv("b26.csv")
 thyroid_sick_euthyroid = read.csv("b27.csv")
 wbdc = read.csv("b28.csv")
 wisconsin = read.csv("b29.csv")
 wine = read.csv("b30.csv")
-yeast = read.csv("b31.csv") #and i guess here
+yeast = read.csv("b31.csv")
 zoo = read.csv("b32.csv")
 
 
@@ -55,14 +54,15 @@ no_cores = max(1, detectCores()-1)
 
 work <<- function(l1, l2, l3, l4, formula, data.train, data.test){
   set.seed(42)
-  NN = neuralnet(formula, data.train, hidden = c(l1, l2, l3, l4), stepmax = 1e+07, linear.output=T)
+  time <- system.time(NN <- neuralnet(formula, data.train, hidden = c(l1, l2, l3, l4), stepmax = 1e+07, linear.output=T))
   previsao <- compute(NN, data.test[,-ncol(data.test)])
-
+  
   mse <- sum((data.test[,ncol(data.test)] - previsao$net.result)^2 / nrow(data.test))
-  return (c(l1,l2,l3,l4,mse))
+  return (c(l1,l2,l3,l4,mse, time[1], time[2]))
 }
 
 calculate = function(data, data_name, f_work){
+  message("Processing " , data_name)
   amostra = 0.7 * ncol(data)
   set.seed(23)
   indice = sample(seq_len(ncol(data)), size=amostra)
@@ -120,40 +120,40 @@ calculate = function(data, data_name, f_work){
   ) %dopar% f_work(base[index,1],base[index,2],base[index,3],base[index,4], formula, data.train, data.test)
   
   stopCluster(cluster)
-  colnames(result) = c("1st layer", "2nd layer", "3rd layer", "4th layer", "MSE")
+  colnames(result) = c("1st layer", "2nd layer", "3rd layer", "4th layer", "MSE", "User Time", "CPU Time")
   write.csv(result, file=paste(data_name, "csv", collapse = "."), row.names=F)
   
 }
 
-calculate(abalone,"abalone", work)
-calculate(arrythmia,"arrythmia", work)
-calculate(audiology,"audiology", work)
-calculate(balance,"balance", work)
-calculate(breast_cancer,"breast_cancer", work)
-calculate(car_eval,"car_eval", work)
-calculate(CM1,"CM1", work)
-calculate(datatrieve,"datatrieve", work)
-calculate(desharnais,"desharnais", work)
-calculate(ecoli,"ecoli", work)
-calculate(echo_cardiogram,"echo_cardiogram", work)
-calculate(glass,"glass", work)
-calculate(heart_cleveland,"heart_cleveland", work)
-calculate(heart_statlog,"heart_statlog", work)
-calculate(hepatitis,"hepatitis", work)
-calculate(JM1,"JM1", work)
-calculate(kr_vs_kp,"kr_vs_kp", work)
-calculate(MW1,"MW1", work)
-calculate(pima_diabetes,"pima_diabetes", work)
-calculate(post_operative,"post_operative", work)
-calculate(primary_tumor,"primary_tumor", work)
-calculate(reuse,"reuse", work)
-calculate(solar_flare,"solar_flare", work)
-calculate(tic_tac_toe,"tic_tac_toe", work)
-calculate(thyroid_allhyper,"thyroid_allhyper", work)
-calculate(thyroid_hypothyroid,"thyroid_hypothyroid", work)
-calculate(thyroid_sick_euthyroid,"thyroid_sick_euthyroid", work)
-calculate(wbdc,"wbdc", work)
-calculate(wisconsin,"wisconsin", work)
-calculate(wine,"wine", work)
-calculate(yeast,"yeast", work)
-calculate(zoo,"zoo", work)
+tryCatch(calculate(abalone,"abalone", work), error = function(e){message(e, "\n")})
+# tryCatch(calculate(arrythmia,"arrythmia", work), error = function(e){message(e, "\n")}) # Do not converge
+tryCatch(calculate(audiology,"audiology", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(balance,"balance", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(breast_cancer,"breast_cancer", work), error = function(e){message(e, "\n")}) # Error
+tryCatch(calculate(car_eval,"car_eval", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(CM1,"CM1", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(datatrieve,"datatrieve", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(desharnais,"desharnais", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(ecoli,"ecoli", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(echo_cardiogram,"echo_cardiogram", work), error = function(e){message(e, "\n")}) # Error
+tryCatch(calculate(glass,"glass", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(heart_cleveland,"heart_cleveland", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(heart_statlog,"heart_statlog", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(hepatitis,"hepatitis", work), error = function(e){message(e, "\n")}) # Error
+tryCatch(calculate(JM1,"JM1", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(kr_vs_kp,"kr_vs_kp", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(MW1,"MW1", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(pima_diabetes,"pima_diabetes", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(post_operative,"post_operative", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(primary_tumor,"primary_tumor", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(reuse,"reuse", work), error = function(e){message(e, "\n")}) # Error
+tryCatch(calculate(solar_flare,"solar_flare", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(tic_tac_toe,"tic_tac_toe", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(thyroid_allhyper,"thyroid_allhyper", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(thyroid_hypothyroid,"thyroid_hypothyroid", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(thyroid_sick_euthyroid,"thyroid_sick_euthyroid", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(wbdc,"wbdc", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(wisconsin,"wisconsin", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(wine,"wine", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(yeast,"yeast", work), error = function(e){message(e, "\n")})
+tryCatch(calculate(zoo,"zoo", work), error = function(e){message(e, "\n")})
