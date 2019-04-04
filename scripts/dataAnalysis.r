@@ -12,11 +12,12 @@ for (i in 1:n){
 }
 
 
+
 # ------------------------- Let's see what happens with B1 ------------------------
 b1 <- base[[1]]
 summary(b1$MSE)
 
-# Best MSE with 12 neurons in the first layer. Base has 8 attributes!
+# Best MSE with 12 neurons in the first layer.
 # 8.28
 b1[b1$MSE == min(b1$MSE), ]
 
@@ -24,3 +25,19 @@ b1[b1$MSE == min(b1$MSE), ]
 # 56.3
 # min = 8.68
 summary(b1[b1$`1st layer` == 8, 5])
+# -------------------------------------------------
+
+
+
+# ------- Now let's see the best MSE  for all datasets  ------------
+foo <- ''
+for (i in 1:32){
+  if (!(i %in% noConv)){
+    foo <- rbind(foo, (base[[i]][base[[i]]$MSE == min(base[[i]]$MSE), ]))
+  }
+}
+foo<- foo[-1,]
+foo <- cbind(seq(1:32)[!(1:32 %in% noConv)], foo)
+names(foo)[1] <- 'Base'
+write.csv(foo,'confByMSE.csv',row.names=F)
+# -------------------------------------------------
