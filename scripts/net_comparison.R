@@ -62,7 +62,7 @@ calculate = function(data,layer_range = 3,layers = 4){
   ll = max(ncol(data.norm) - layer_range, -1)
   lh = ncol(data.norm) + layer_range
   
-  base <- matrix(ncol=layers, permutations(n=lh-ll+1,r=layers,ll:lh, repeats.allowed=TRUE))
+  base <- permutations(n=lh-ll+1,r=layers,ll:lh, repeats.allowed=TRUE)
   
   data.train = data.norm[indice, ]
   data.test = data.norm[-indice, ]
@@ -101,7 +101,7 @@ for (i in 1:n){
     try({
       data <- read.csv(dataURL[i])
       for (j in 1:4) {
-        result <- calculate(data,range = 3,layers = j)
+        result <- calculate(data,layer_range = 3,layers = j)
         write.csv(result, file=paste('results/B',i,'L',j,'.csv', sep=""), row.names=FALSE)
       }
     })
