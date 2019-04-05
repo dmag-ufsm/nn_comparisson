@@ -85,7 +85,7 @@ calculate = function(data,layer_range = 3,layers = 4){
   stopCluster(cluster)
   
   colnames(result) = c(sapply(1:layers,function(i){ 
-      return(paste("Layer ",i)) 
+      return(paste("Layer",i)) 
   }), "MSE", "User Time", "CPU Time")
   return(result)
 }
@@ -97,7 +97,7 @@ noConv <- c(2)#no convergence
 for (i in 1:n){
   if (!(i %in% noConv)){
     dataURL[i] <- paste('https://raw.githubusercontent.com/dmag-ufsm/nn_comparisson/master/datasets/B',i,'.csv', sep='')
-    message("Processing B",i,".csv")
+    message(format(Sys.time(), "[%Y-%m-%d %X]"), "Processing B",i,".csv")
     try({
       data <- read.csv(dataURL[i])
       for (j in 1:4) {
@@ -107,3 +107,4 @@ for (i in 1:n){
     })
   }
 }
+message(format(Sys.time(), "[%Y-%m-%d %X]"), "Finished")
