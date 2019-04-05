@@ -1,159 +1,109 @@
 getwd()
 
+if (!"doParallel" %in% rownames(installed.packages())){
+  message ("Installing doParallel")
+  install.packages("doParallel")
+}
+
+if (!"curl" %in% rownames(installed.packages())){
+  message ("Installing curl")
+  install.packages("curl")
+}
+
+if (!"gtools" %in% rownames(installed.packages())){
+  message ("Installing gtools")
+  install.packages("gtools")
+}
+
 library(neuralnet)
 library(parallel)
 library(doParallel)
+library(readr)
+library(gtools)
 
-abalone = read.csv("b1.csv")
-# arrythmia = read.csv("b2.csv") # Do not converge
-audiology = read.csv("b3.csv")
-balance = read.csv("b4.csv")
-breast_cancer = read.csv("b5.csv")
-car_eval = read.csv("b6.csv")
-CM1 = read.csv("b7.csv")
-datatrieve = read.csv("b8.csv")
-desharnais = read.csv("b9.csv")
-ecoli = read.csv("b10.csv")
-echo_cardiogram = read.csv("b11.csv")
-glass = read.csv("b12.csv")
-heart_cleveland = read.csv("b13.csv")
-heart_statlog = read.csv("b14.csv")
-hepatitis = read.csv("b15.csv")
-JM1 = read.csv("b16.csv")
-kr_vs_kp = read.csv("b17.csv")
-MW1 = read.csv("b18.csv")
-pima_diabetes = read.csv("b19.csv")
-post_operative = read.csv("b20.csv")
-primary_tumor = read.csv("b21.csv")
-reuse = read.csv("b22.csv")
-solar_flare = read.csv("b23.csv")
-tic_tac_toe = read.csv("b24.csv")
-thyroid_allhyper = read.csv("b25.csv")
-thyroid_hypothyroid = read.csv("b26.csv")
-thyroid_sick_euthyroid = read.csv("b27.csv")
-wbdc = read.csv("b28.csv")
-wisconsin = read.csv("b29.csv")
-wine = read.csv("b30.csv")
-yeast = read.csv("b31.csv")
-zoo = read.csv("b32.csv")
-
-
-
-normalize = function(x){
+scale_column = function(x){
   return (x-min(x))/(max(x) - min(x))
 }
 
-
-#defines the range of hidden layer sizes
-layer_range = 3
-hidden_layers = 4
+normalize = function(data) {
+  data.norm <- as.data.frame(sapply(data, unclass))
+  
+  # vars = names(data)
+  # must_convert <- sapply(data, is.factor)
+  # temp <- sapply(data[,must_convert], unclass)
+  # if (class(temp) != "list") {
+  # 
+  #   data.norm <- cbind(data[,!must_convert], temp)
+  #   if (class(temp) == "integer") {
+  #     x <- names(data.norm)
+  #     x[length(x)] <- vars[must_convert]
+  #     names(data.norm) <- x
+  #   }
+  #   data.norm = data.norm[,vars]
+  # } else {
+  #   data.norm = data
+  # }
+  return(as.data.frame(lapply(data.norm, scale_column)))
+}
 
 #core numbers and config
 no_cores = max(1, detectCores()-1)
 
-
-work <<- function(l1, l2, l3, l4, formula, data.train, data.test){
-  set.seed(42)
-  time <- system.time(NN <- neuralnet(formula, data.train, hidden = c(l1, l2, l3, l4), stepmax = 1e+07, linear.output=T))
-  previsao <- compute(NN, data.test[,-ncol(data.test)])
-  
-  mse <- sum((data.test[,ncol(data.test)] - previsao$net.result)^2 / nrow(data.test))
-  return (c(l1,l2,l3,l4,mse, time[1], time[2]))
-}
-
-calculate = function(data, data_name, f_work){
-  message("Processing " , data_name)
+calculate = function(data,layer_range = 3,layers = 4){
   amostra = 0.7 * ncol(data)
   set.seed(23)
   indice = sample(seq_len(ncol(data)), size=amostra)
   
-  vars = names(data)  
+  data.norm = normalize(data)
   
-  must_convert <- sapply(data, is.factor)
-  temp <- sapply(data[,must_convert], unclass)
-  if (class(temp) != "list") {
-    data.norm <- cbind(data[,!must_convert], temp)
-    if (class(temp) == "integer") { 
-      x <- names(data.norm)
-      x[length(x)] <- vars[must_convert]
-      names(data.norm) <- x 
-    }
-    data.norm = data.norm[,vars]
-  } else {
-    data.norm = data
-  }
-  
-  
-  data.norm = as.data.frame(lapply(data.norm, normalize))
-  
+  vars = names(data.norm)
   goal_class = tail(vars, n=1)
   formula = as.formula(paste(paste(goal_class, " ~ ", collapse = ""), paste(vars[vars!=goal_class], collapse = " + ")))
   ll = max(ncol(data.norm) - layer_range, -1)
   lh = ncol(data.norm) + layer_range
-  tamanho_base = (lh-ll+1)**hidden_layers
-  base = matrix(nrow = tamanho_base, ncol=hidden_layers)
-  a <- 1
-  for(i in ll:lh){
-    for(j in ll:lh){
-      for(k in ll:lh){
-        for(l in ll:lh){
-          base[a, 1] <- i
-          base[a, 2] <- j
-          base[a, 3] <- k
-          base[a, 4] <- l
-          a <- a + 1
-        }
-      }
-    }
-  }
+  
+  base <- matrix(ncol=layers, permutations(n=lh-ll+1,r=layers,ll:lh, repeats.allowed=TRUE))
   
   data.train = data.norm[indice, ]
   data.test = data.norm[-indice, ]
-  
+
   cluster <- makeCluster(no_cores)
   registerDoParallel(cluster)
-  
-  result <- foreach(index = 1:tamanho_base,
+
+  result <- foreach(index = 1:nrow(base),
                     .combine = rbind,
-                    # .export = c("formula", "data.train", "data.test"),
                     .packages = c("neuralnet")
-  ) %dopar% f_work(base[index,1],base[index,2],base[index,3],base[index,4], formula, data.train, data.test)
-  
+  ) %dopar% {
+    set.seed(42)
+    time <- system.time(NN <- neuralnet(formula, data.train, hidden = base[index,], stepmax = 1e+07, linear.output=T))
+    previsao <- compute(NN, data.test[,-ncol(data.test)])
+    
+    mse <- sum((data.test[,ncol(data.test)] - previsao$net.result)^2 / nrow(data.test))
+    return (c(base[index,],mse, time[1], time[2]))
+  }
+
   stopCluster(cluster)
-  colnames(result) = c("1st layer", "2nd layer", "3rd layer", "4th layer", "MSE", "User Time", "CPU Time")
-  write.csv(result, file=paste(data_name, "csv", collapse = "."), row.names=F)
   
+  colnames(result) = c(sapply(1:layers,function(i){ 
+      return(paste("Layer ",i)) 
+  }), "MSE", "User Time", "CPU Time")
+  return(result)
 }
 
-tryCatch(calculate(abalone,"abalone", work), error = function(e){message(e, "\n")})
-# tryCatch(calculate(arrythmia,"arrythmia", work), error = function(e){message(e, "\n")}) # Do not converge
-tryCatch(calculate(audiology,"audiology", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(balance,"balance", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(breast_cancer,"breast_cancer", work), error = function(e){message(e, "\n")}) # Error
-tryCatch(calculate(car_eval,"car_eval", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(CM1,"CM1", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(datatrieve,"datatrieve", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(desharnais,"desharnais", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(ecoli,"ecoli", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(echo_cardiogram,"echo_cardiogram", work), error = function(e){message(e, "\n")}) # Error
-tryCatch(calculate(glass,"glass", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(heart_cleveland,"heart_cleveland", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(heart_statlog,"heart_statlog", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(hepatitis,"hepatitis", work), error = function(e){message(e, "\n")}) # Error
-tryCatch(calculate(JM1,"JM1", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(kr_vs_kp,"kr_vs_kp", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(MW1,"MW1", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(pima_diabetes,"pima_diabetes", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(post_operative,"post_operative", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(primary_tumor,"primary_tumor", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(reuse,"reuse", work), error = function(e){message(e, "\n")}) # Error
-tryCatch(calculate(solar_flare,"solar_flare", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(tic_tac_toe,"tic_tac_toe", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(thyroid_allhyper,"thyroid_allhyper", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(thyroid_hypothyroid,"thyroid_hypothyroid", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(thyroid_sick_euthyroid,"thyroid_sick_euthyroid", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(wbdc,"wbdc", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(wisconsin,"wisconsin", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(wine,"wine", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(yeast,"yeast", work), error = function(e){message(e, "\n")})
-tryCatch(calculate(zoo,"zoo", work), error = function(e){message(e, "\n")})
+dataURL <- vector()
+base <- list()
+n <- 32
+noConv <- c(2)#no convergence
+for (i in 1:n){
+  if (!(i %in% noConv)){
+    dataURL[i] <- paste('https://raw.githubusercontent.com/dmag-ufsm/nn_comparisson/master/datasets/B',i,'.csv', sep='')
+    message("Processing B",i,".csv")
+    try({
+      data <- read.csv(dataURL[i])
+      for (j in 1:4) {
+        result <- calculate(data,range = 3,layers = j)
+        write.csv(result, file=paste('results/B',i,'L',j,'.csv', sep=""), row.names=FALSE)
+      }
+    })
+  }
+}
