@@ -22,7 +22,9 @@ library(readr)
 library(gtools)
 
 scale_column = function(x){
-  return (x-min(x))/(max(x) - min(x))
+  d = max(x)-min(x)
+  n = x-min(x)
+  return (n/d)
 }
 
 normalize = function(data) {
