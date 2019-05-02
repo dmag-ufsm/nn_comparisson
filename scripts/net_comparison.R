@@ -17,9 +17,9 @@ library(gtools)
 #core numbers and config
 no_cores <- max(1, detectCores()-1)
 reuse_previous_results <- FALSE
-layer_range <- 3
+layer_range <- 5
 min_layers <- 1
-max_layers <- 1
+max_layers <- 4
 
 scale_column = function(x){  
   y = x[!is.na(x)]
@@ -166,7 +166,7 @@ calculate = function(data,data_name,existing_data = NULL,layer_range = 3,layers 
 dataURL <- vector()
 base <- list()
 n <- 32
-noConv <- c()#no convergence
+noConv <- c(2)#no convergence
 for (i in 1:n){
   if (!(i %in% noConv)){
     dataURL[i] <- paste('https://raw.githubusercontent.com/dmag-ufsm/nn_comparisson/master/datasets/B',i,'.csv', sep='')
