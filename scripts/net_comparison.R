@@ -1,18 +1,10 @@
 getwd()
 
-if (!"doSNOW" %in% rownames(installed.packages())){
-  message ("Installing doSNOW")
-  install.packages("doSNOW")
-}
-
-if (!"curl" %in% rownames(installed.packages())){
-  message ("Installing curl")
-  install.packages("curl")
-}
-
-if (!"gtools" %in% rownames(installed.packages())){
-  message ("Installing gtools")
-  install.packages("gtools")
+for (package in c("neuralnet","doSNOW","curl","readr","gtools")) {
+  if (!package %in% rownames(installed.packages())){
+    message (paste("Installing", package))
+    install.packages(package)
+  }
 }
 
 library(neuralnet)
@@ -54,6 +46,7 @@ normalize = function(data) {
 
 #core numbers and config
 no_cores = max(1, detectCores()-1)
+reuse_previous_results <- FALSE
 
 
 tryCatch({
@@ -131,21 +124,15 @@ calculate = function(data,data_name,existing_data = NULL,layer_range = 3,layers 
     }
 
     if (!is.null(previous) && nrow(previous) == 1) {
-      # Log("recovering %s",data_line)
+      Log("recovering %s",data_line)
       return (c(base[index,], previous$MSE, previous$User.Time, previous$CPU.Time, TRUE))
     }
 
-    # Log("processing %s",data_line)
+    Log("processing %s",data_line)
 
     set.seed(42)
     
-    Log(hidden)
-    
     time <- system.time(NN <- neuralnet(formula, data.train, hidden, stepmax = 1e+07, linear.output=T))
-    
-    return (c(base[index,], 0,0,0,0))
-    
-    
     previsao <- compute(NN, data.test[,-ncol(data.test)])
     
     mse <- sum((data.test[,ncol(data.test)] - previsao$net.result)^2 / nrow(data.test))
@@ -171,22 +158,21 @@ for (i in 22:22){
     dataURL[i] <- paste('https://raw.githubusercontent.com/dmag-ufsm/nn_comparisson/master/datasets/B',i,'.csv', sep='')
     try({
       data <- read.csv(dataURL[i])
-      for (j in 1:1) {
+      for (j in 2:2) {
         
         layer <- ifelse(j == 1 , "layer" , "layers")
         message(format(Sys.time(), "[%Y-%m-%d %X]"), " Processing B",i,".csv with ",j," hidden ",layer)
         
         data_name = paste('B',i,'L',j, sep="")
         
-        if (file.exists(paste('results/',data_name,'.csv', sep=""))){
+        if (reuse_previous_results && file.exists(paste('results/',data_name,'.csv', sep=""))){
           existing_data <- read.csv(paste('results/',data_name,'.csv', sep=""))
         } else {
           existing_data=NULL
         }
         
         result <- calculate(data,data_name,existing_data,layer_range=5,layers=j)
-        # write.csv(result, file=paste('results/N',data_name,'.csv', sep=""), row.names=FALSE)
-        message(format(Sys.time(), "[%Y-%m-%d %X]"), " Finished processing B",i,".csv with ",j," hidden ",layer)
+        write.csv(result, file=paste('results/N',data_name,'.csv', sep=""), row.names=FALSE)
       }
     })
   }
