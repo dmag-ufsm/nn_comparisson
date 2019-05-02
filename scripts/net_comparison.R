@@ -53,9 +53,9 @@ normalize = function(data) {
 #core numbers and config
 no_cores <- max(1, detectCores()-1)
 reuse_previous_results <- FALSE
-layer_range <- 5
+layer_range <- 3
 min_layers <- 1
-max_layers <- 4
+max_layers <- 2
 
 
 tryCatch({
@@ -177,7 +177,7 @@ for (i in 1:n){
         if (reuse_previous_results && file.exists(paste('results/',data_name,'.csv', sep=""))){
           existing_data <- read.csv(paste('results/',data_name,'.csv', sep=""))
         } else {
-          existing_data=NULL
+          existing_data <- NULL
         }
         
         result <- calculate(data,data_name,existing_data,layer_range,layers=j)
