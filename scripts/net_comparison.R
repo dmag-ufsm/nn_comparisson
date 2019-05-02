@@ -20,6 +20,12 @@ scale_column = function(x){
   x[is.na(x)] = avg
   d = max(x)-min(x)
   n = x-min(x)
+  
+  # In case max and min are same value
+  if (d == 0){
+    d = max(x)
+    n = x
+  }
   return (n/d)
 }
 
