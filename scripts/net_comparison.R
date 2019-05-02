@@ -45,8 +45,11 @@ normalize = function(data) {
 }
 
 #core numbers and config
-no_cores = max(1, detectCores()-1)
+no_cores <- max(1, detectCores()-1)
 reuse_previous_results <- FALSE
+layer_range <- 5
+min_layers <- 1
+max_layers <- 4
 
 
 tryCatch({
@@ -152,13 +155,13 @@ calculate = function(data,data_name,existing_data = NULL,layer_range = 3,layers 
 dataURL <- vector()
 base <- list()
 n <- 32
-noConv <- c(2)#no convergence
-for (i in 22:22){
+noConv <- c()#no convergence
+for (i in 1:n){
   if (!(i %in% noConv)){
     dataURL[i] <- paste('https://raw.githubusercontent.com/dmag-ufsm/nn_comparisson/master/datasets/B',i,'.csv', sep='')
     try({
       data <- read.csv(dataURL[i])
-      for (j in 2:2) {
+      for (j in min_layers:max_layers) {
         
         layer <- ifelse(j == 1 , "layer" , "layers")
         message(format(Sys.time(), "[%Y-%m-%d %X]"), " Processing B",i,".csv with ",j," hidden ",layer)
@@ -171,7 +174,7 @@ for (i in 22:22){
           existing_data=NULL
         }
         
-        result <- calculate(data,data_name,existing_data,layer_range=5,layers=j)
+        result <- calculate(data,data_name,existing_data,layer_range,layers=j)
         write.csv(result, file=paste('results/N',data_name,'.csv', sep=""), row.names=FALSE)
       }
     })
