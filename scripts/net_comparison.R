@@ -22,6 +22,9 @@ library(readr)
 library(gtools)
 
 scale_column = function(x){
+  y = x[!is.na(x)]
+  avg = sum(y)/length(y)
+  x[is.na(x)] = avg
   d = max(x)-min(x)
   n = x-min(x)
   return (n/d)
