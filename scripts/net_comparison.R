@@ -15,6 +15,10 @@ library(readr)
 library(gtools)
 
 scale_column = function(x){
+  if (max(x) == min(x) && max(x) == 0){
+    return x
+  }
+  
   y = x[!is.na(x)]
   avg = sum(y)/length(y)
   x[is.na(x)] = avg
