@@ -14,9 +14,16 @@ library(doSNOW)
 library(readr)
 library(gtools)
 
+#core numbers and config
+no_cores <- max(1, detectCores()-1)
+reuse_previous_results <- FALSE
+layer_range <- 3
+min_layers <- 1
+max_layers <- 1
+
 scale_column = function(x){
   if (max(x) == min(x) && max(x) == 0){
-    return x
+    return (x)
   }
   
   y = x[!is.na(x)]
@@ -54,14 +61,6 @@ normalize = function(data) {
   return(as.data.frame(lapply(data.norm, scale_column)))
 }
 
-#core numbers and config
-no_cores <- max(1, detectCores()-1)
-reuse_previous_results <- FALSE
-layer_range <- 3
-min_layers <- 1
-max_layers <- 2
-
-
 tryCatch({
   log.socket <- make.socket(port=4000)
 },error = function(e){
@@ -73,7 +72,6 @@ tryCatch({
     message("nc -l 4000")
   }
 })
-
 
 Log = function(text, ...) {
   msg <- sprintf(paste0(as.character(Sys.time()), ": ", text, "\n"), ...)
