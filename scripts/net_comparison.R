@@ -21,14 +21,17 @@ layer_range <- 3
 min_layers <- 1
 max_layers <- 1
 
-scale_column = function(x){
+scale_column = function(x){  
+  y = x[!is.na(x)]
+  avg = sum(y)/length(y)
+  x[is.na(x)] = avg
+  
+  #If all is 0
   if (max(x) == min(x) && max(x) == 0){
     return (x)
   }
   
-  y = x[!is.na(x)]
-  avg = sum(y)/length(y)
-  x[is.na(x)] = avg
+  
   d = max(x)-min(x)
   n = x-min(x)
   
