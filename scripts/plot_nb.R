@@ -11,7 +11,7 @@ files = list.files()
 files = grep("NB[0-9]*L[0-9]*.csv", files, perl = T, value = T)
 
 index = 1
-values = []
+values = c()
 for(i in files){
   try({
     a = read.csv(i)
@@ -23,9 +23,10 @@ for(i in files){
 ind = paste(files)
 ids = seq(1:length(files))
 
+# For some reason, values is starting at 2.
 data = data.frame(id=ids, 
                   individual = ind,
-                  value=values)
+                  value=values[2:length(values)])
 
 label_data = data
 bar_number = nrow(label_data)
@@ -47,4 +48,6 @@ p = ggplot(data, aes(x=as.factor(ids), y=values))+
   geom_text(data=label_data, aes(x=ids, y=value+10, label=individual, hjust=hjust), color="black", fontface="bold", alpha=0.6, size=2.6, angle=label_data$angle, inherit.aes = F)
 
 
+# for testing:
+#p = ggplot(data)
 p
