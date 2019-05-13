@@ -26,7 +26,7 @@ ids = seq(1:length(files))
 # For some reason, values is starting at 2.
 data = data.frame(id=ids, 
                   individual = ind,
-                  value=values[2:length(values)])
+                  value=values)
 
 label_data = data
 bar_number = nrow(label_data)
