@@ -29,6 +29,7 @@ for(i in 1:32){
   })
   dm = data.frame(rbind(best, avg, worst))
   plots[p] = plot(dm)
+  p = p + 1
 }
 
 # wat
