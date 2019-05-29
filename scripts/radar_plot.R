@@ -6,15 +6,16 @@ for (package in c("fmsb")) {
 }
 
 library(fmsb)
-
+i <- 1
 # Create data: note in High school for Jonathan:
 # data=as.data.frame(matrix( sample( 2:20 , 29 , replace=T) , ncol=29))
-data.1=c()
-data.2=c()
-data.3=c()
-data.4=c()
+data.1=data.frame()
+data.2=data.frame()
+data.3=data.frame()
+data.4=data.frame()
 data=c()
 skip=c(2,10)
+b=F
 for (i in 1:31) {
   if (!(i %in% skip)){
     dataset.1 <- cbind(read.csv(paste("neo_results/NB",i,"L1.csv",sep="")),source=c(paste("B",i,sep="")))
@@ -25,10 +26,18 @@ for (i in 1:31) {
     best.2 <- dataset.2[order(dataset.2$MSE),][1:1,]
     best.3 <- dataset.3[order(dataset.3$MSE),][1:1,]
     best.4 <- dataset.4[order(dataset.4$MSE),][1:1,]
-    data.1 <- merge(data.1,best.1,all=T)
-    data.2 <- merge(data.2,best.2,all=T)
-    data.3 <- merge(data.3,best.3,all=T)
-    data.4 <- merge(data.4,best.4,all=T)
+    if (!b) {
+      r<-2
+      b<-T
+    } else {
+      r<-1
+    }
+    for (j in 1:r) {
+      data.1 <- merge(data.1,best.1,all=T)
+      data.2 <- merge(data.2,best.2,all=T)
+      data.3 <- merge(data.3,best.3,all=T)
+      data.4 <- merge(data.4,best.4,all=T)  
+    }
   }
 }
 
@@ -64,17 +73,18 @@ data.t.mm=rbind(5, 0, data.t)
 # radarchart(data.t.mm, maxmin=T)
 
 colors_border=c( 
-  rgb(0.2,0.5,0.5,0.9), 
-  rgb(0.8,0.2,0.5,0.9), 
-  rgb(0.7,0.5,0.1,0.9),
-  rgb(0.5,0.5,0.5,0.9) 
+  rgb(0.0,0.8,0.0,0.9), 
+  rgb(0.8,0.0,0.0,0.9), 
+  rgb(0.0,0.0,0.8,0.9), 
+  rgb(0.8,0.8,0.0,0.9) 
 )
 
+
 colors_in=c( 
-  rgb(0.2,0.5,0.5,0.2), 
-  rgb(0.8,0.2,0.5,0.2), 
-  rgb(0.7,0.5,0.1,0.2), 
-  rgb(0.5,0.5,0.5,0.2) 
+  rgb(0.0,0.8,0.0,0.05), 
+  rgb(0.8,0.0,0.0,0.1), 
+  rgb(0.0,0.0,0.8,0.15), 
+  rgb(0.8,0.8,0.0,0.2) 
 )
 
 
@@ -91,4 +101,11 @@ radarchart( data.t.mm  , axistype=0 ,  maxmin=T,
             # vlcex=.8
 )
 
-legend(x=0.7, y=1, legend = c("A","B","C","D"), bty = "n", pch=20 , col=colors_in , text.col = "grey", cex=1.2, pt.cex=3)
+colors_in=c( 
+  rgb(0.0,0.8,0.0,1), 
+  rgb(0.8,0.0,0.0,1), 
+  rgb(0.0,0.0,0.8,1), 
+  rgb(0.8,0.8,0.0,1) 
+)
+
+legend(x=1.5, y=.7, legend = c("L1","L2","L3","L4"), bty = "n", pch=20 , col=colors_in , text.col = "grey", cex=1.2, pt.cex=3)
